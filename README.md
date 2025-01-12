@@ -1,7 +1,9 @@
 # RPi.GPIO
-RPi.GPIO wrapper for WiringPi supporting RPi 5B
+RPi.GPIO wrapper for WiringPi supporting RPi 5B, RPi Zero W, RPi Zero 2W, RPi 3B,4B
 
 This package provides a Python module to control the GPIO on a Raspberry Pi.
+
+![image](https://github.com/user-attachments/assets/0c0b5f5a-1047-423f-b89b-8c76ebf69edf)
 
 Note that this module is unsuitable for real-time or timing critical applications.  This is because you
 can not predict when Python will be busy garbage collecting.  It also runs under the Linux kernel which
