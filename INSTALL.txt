@@ -1,0 +1,68 @@
+If you are using Raspbian, all you need to do to install the latest release is:
+Not supported yet:
+$ sudo apt-get update
+$ sudo apt-get install python-rpi.gpio python3-rpi.gpio
+
+------------
+Not supported yet:
+If you are not using Raspbian, it is recommended that you install this module using pip:
+$ pip install RPi.GPIO
+   or
+$ pip3 install RPi.GPIO
+
+------------
+
+If you want to build your own version from this downloaded copy, make
+sure that you remove current installed versions of RPi.GPIO and WiringPi.
+Then have the Python development source installed:
+
+# On Pi-OS:
+# Remove old version of RPi.GPIO:
+sudo apt purge python3-rpi.gpio
+
+# Remove old version of WiringPi:
+sudo apt purge WiringPi
+
+# Install Python development
+sudo apt install python-dev python3-dev
+
+# Install python3 build package
+sudo apt install python3-build
+
+# Install latest version of WiringPi:
+# fetch the source
+sudo apt install git
+git clone https://github.com/WiringPi/WiringPi.git
+cd WiringPi
+
+# build the package
+./build debian
+
+# on Pi-OS 32 Bit:
+mv debian-template/wiringpi-3.1x-armhf.deb .
+
+# on Pi-OS 64 Bit
+mv debian-template/wiringpi-3.1x-arm64.deb .
+
+# install it
+# on Pi-OS 32 Bit
+sudo apt install ./wiringpi-3.12_armhf.deb
+
+# on Pi.OS 64 Bit
+sudo apt install ./wiringpi-3.12_arm64.deb
+
+# Install latest version of RPi.GPIO
+git clone https://github.com/....RPi.GPIO.git
+
+# unpack RPi.GPIO-0.8.2.tar.gz
+tar -xfv RPi.GPIO-0.8.2.tar.gz
+
+# To install RPi.GPIO:
+cd RPi.GPIO-0.8.2
+python3 -m build --sdist
+cd dist
+sudo pip3 install rpi_gpio-0.8.2.tar.gz
+
+
+
+
