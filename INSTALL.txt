@@ -54,9 +54,9 @@ sudo apt install ./wiringpi-3.12_arm64.deb
 # fetch latest version of RPi.GPIO
 git clone https://github.com/phylax2020/RPi.GPIO.git
 
-# or get assets RPi.GPIO-0.8.0.tar.gz or RPi.GPIO-0.8.0.zip from https://github.com/phylax2020/RPi.GPIO/tree/v0.8.0
-# unpack RPi.GPIO-0.8.0.tar.gz
-tar -xfv RPi.GPIO-0.8.0.tar.gz
+# or get assets RPi.GPIO-0.8.2.tar.gz or RPi.GPIO-0.8.2.zip from https://github.com/phylax2020/RPi.GPIO/tree/v0.8.2
+# unpack RPi.GPIO-0.8.2.tar.gz
+tar -xfv RPi.GPIO-0.8.2.tar.gz
 
 # To install RPi.GPIO:
 cd RPi.GPIO
