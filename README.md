@@ -1,5 +1,5 @@
 # RPi.GPIO
-RPi.GPIO wrapper for WiringPi
+RPi.GPIO wrapper for WiringPi supporting RPi 5B
 
 This package provides a Python module to control the GPIO on a Raspberry Pi.
 
