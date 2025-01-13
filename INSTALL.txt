@@ -30,6 +30,7 @@ sudo apt install python-dev python3-dev
 sudo apt install python3-build
 
 # Install latest version of WiringPi:
+# Installing instructions can be found at https://github.com/WiringPi/WiringPi
 # fetch the source
 sudo apt install git
 git clone https://github.com/WiringPi/WiringPi.git
