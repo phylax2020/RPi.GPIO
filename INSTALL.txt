@@ -14,21 +14,27 @@ $ pip3 install RPi.GPIO
 
 If you want to build your own version from this downloaded copy, make
 sure that you remove current installed versions of RPi.GPIO and WiringPi.
-Then have the Python development source installed:
 
 # On Pi-OS:
+# update Pi-OS
+sudo apt update
+sudo apt upgrade
+
+#install pip
+sudo apt install python3-pip
+
+# Install Python3 development
+sudo apt install python3-dev
+
+# Install python3 build package
+sudo apt install python3-build
+
 # Remove old version of RPi.GPIO:
 sudo apt purge python3-rpi.gpio
 
 # Remove old version of WiringPi:
 sudo apt purge WiringPi
-
-# Install Python development
-sudo apt install python-dev python3-dev
-
-# Install python3 build package
-sudo apt install python3-build
-
+ 
 # Install latest version of WiringPi:
 # Installing instructions can be found at https://github.com/WiringPi/WiringPi
 # fetch the source
@@ -40,30 +46,41 @@ cd WiringPi
 ./build debian
 
 # on Pi-OS 32 Bit:
-mv debian-template/wiringpi-3.1x-armhf.deb .
+mv debian-template/wiringpi_3.12_armhf.deb .
 
 # on Pi-OS 64 Bit
-mv debian-template/wiringpi-3.1x-arm64.deb .
+mv debian-template/wiringpi_3.12_arm64.deb .
 
 # install it
 # on Pi-OS 32 Bit
-sudo apt install ./wiringpi-3.12_armhf.deb
+sudo apt install ./wiringpi_3.12_armhf.deb
 
 # on Pi.OS 64 Bit
-sudo apt install ./wiringpi-3.12_arm64.deb
+sudo apt install ./wiringpi_3.12_arm64.deb
 
 # fetch latest version of RPi.GPIO
+cd ~
 git clone https://github.com/phylax2020/RPi.GPIO.git
 
 # or get assets RPi.GPIO-0.8.2.tar.gz or RPi.GPIO-0.8.2.zip from https://github.com/phylax2020/RPi.GPIO/tree/v0.8.2
 # unpack RPi.GPIO-0.8.2.tar.gz
 tar -xfv RPi.GPIO-0.8.2.tar.gz
 
+
 # To install RPi.GPIO:
 cd RPi.GPIO
 python3 -m build --sdist
 cd dist
-sudo pip3 install rpi_gpio-0.8.2.tar.gz
+sudo pip3 install rpi_gpio-0.8.2.tar.gz --break-system-packages
+cd ~
+
+# test installation
+python3
+>>> import RPi.GPIO as GPIO
+>>> GPIO.RPI_INFO
+
+>>> exit()
+
 
 
 
