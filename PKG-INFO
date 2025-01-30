@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: RPi.GPIO
-Version: 0.8.2
+Version: 0.8.3
 Summary: A module to control Raspberry Pi GPIO channels
 Home-page: http://sourceforge.net/projects/raspberry-gpio-python/
 Author: Ben Croston
@@ -23,6 +23,10 @@ Description: This package provides a Python module to control the GPIO on a Rasp
         
         Change Log
         ==========
+         
+        0.8.3
+        -------
+        Interrupt functions now working when linked with WiringPi version >= 3.13 
         
         0.8.2
         -------
