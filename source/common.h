@@ -39,6 +39,8 @@ extern int gpio_direction[64];       // -1 : not initialized, 0: input, 1: outpu
 extern rpi_info rpiinfo;
 extern int setup_error;
 extern int module_setup;
+extern int irq_occurred[64];
 
 int check_gpio_priv(void);
 int get_gpio_number(int channel, unsigned int *gpio);
+int irq_detected(unsigned int gpio);

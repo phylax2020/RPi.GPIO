@@ -33,6 +33,17 @@ int gpio_direction[64];
 rpi_info rpiinfo;
 int setup_error = 0;
 int module_setup = 0;
+int irq_occurred[64];
+
+int irq_detected(unsigned int gpio)
+{
+    if (irq_occurred[gpio]) {
+        irq_occurred[gpio] = 0;
+        return 1;
+    } else {
+        return 0;
+    }
+}
 
 int check_gpio_priv(void)
 {
@@ -62,7 +73,7 @@ int get_gpio_number(int channel, unsigned int *gpio)
     }
 
     // check channel number is in range
-    if ( (gpio_mode == BCM && (channel < 0 || channel > 53))
+    if ( (gpio_mode == BCM && (channel < 0 || channel > 63))
       || (gpio_mode == BOARD && (channel < 1 || channel > 26) && rpiinfo.p1_revision != 3)
       || (gpio_mode == BOARD && (channel < 1 || channel > 40) && rpiinfo.p1_revision == 3) )
     {

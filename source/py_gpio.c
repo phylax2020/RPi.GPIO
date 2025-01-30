@@ -29,6 +29,8 @@ SOFTWARE.
 #include "common.h"
 #include <wiringPi.h>
 
+#define	IRQ_KEY	1
+
 static PyObject *rpi_revision; // deprecated
 static PyObject *board_info;
 static int gpio_warnings = 1;
@@ -37,6 +39,8 @@ struct py_callback
 {
    unsigned int gpio;
    PyObject *py_cb;
+   int edge;
+   int bouncetime;
    struct py_callback *next;
 };
 static struct py_callback *py_callbacks = NULL;
@@ -48,7 +52,7 @@ static int mmap_gpio_mem(void)
    if (module_setup)
       return 0;
 
-    result = wiringPiSetup();
+    result = wiringPiSetupGpio();   // always in mode BCM
     module_setup = 1;
     return result;
 
@@ -576,14 +580,16 @@ static PyObject *py_setmode(PyObject *self, PyObject *args)
    }
 
    gpio_mode = new_mode;
-   
+
+   wiringPiSetupGpio();
+/*   
    if (gpio_mode == BOARD) {
      wiringPiSetupPhys();
    }
    else  {
      wiringPiSetupGpio();
    }          
-
+*/
    Py_RETURN_NONE;
 }
 
@@ -624,34 +630,42 @@ static unsigned int chan_from_gpio(unsigned int gpio)
    return -1;
 }
 
-static void run_py_callbacks(unsigned int gpio)
+static void run_py_callbacks(unsigned int gpio, long long int timestamp)
 {
    PyObject *result;
    PyGILState_STATE gstate;
    struct py_callback *cb = py_callbacks;
-
+   
+   piLock (IRQ_KEY) ;
    while (cb != NULL)
    {
       if (cb->gpio == gpio) {
+        irq_occurred[gpio] = 1;  
          // run callback
+//         gpio = cb->gpio;
+        
+        if (cb->py_cb != NULL) {
          gstate = PyGILState_Ensure();
-         result = PyObject_CallFunction(cb->py_cb, "i", chan_from_gpio(gpio));
+         result = PyObject_CallFunction(cb->py_cb, "iL", chan_from_gpio(gpio), timestamp );
          if (result == NULL && PyErr_Occurred()){
             PyErr_Print();
             PyErr_Clear();
          }
          Py_XDECREF(result);
          PyGILState_Release(gstate);
+        }
       }
       cb = cb->next;
    }
+   piUnlock (IRQ_KEY) ;
 }
 
-static int add_py_callback(unsigned int gpio, PyObject *cb_func)
+static int add_py_callback(unsigned int gpio, PyObject *cb_func, int edge, int bouncetime)
 {
    struct py_callback *new_py_cb;
    struct py_callback *cb = py_callbacks;
-
+   int wiringPi_edge, result;
+   
    // add callback to py_callbacks list
    new_py_cb = malloc(sizeof(struct py_callback));
    if (new_py_cb == 0)
@@ -659,9 +673,16 @@ static int add_py_callback(unsigned int gpio, PyObject *cb_func)
       PyErr_NoMemory();
       return -1;
    }
+   
+   irq_occurred[gpio] = 0;
+   piLock (IRQ_KEY) ;
    new_py_cb->py_cb = cb_func;
-   Py_XINCREF(cb_func);         // Add a reference to new callback
+   if (cb_func != NULL)
+     Py_XINCREF(cb_func);         // Add a reference to new callback
    new_py_cb->gpio = gpio;
+   if (edge != -1)
+     new_py_cb->edge = edge;
+   new_py_cb->bouncetime = bouncetime;
    new_py_cb->next = NULL;
    if (py_callbacks == NULL) {
       py_callbacks = new_py_cb;
@@ -671,19 +692,35 @@ static int add_py_callback(unsigned int gpio, PyObject *cb_func)
          cb = cb->next;
       cb->next = new_py_cb;
    }
-   add_edge_callback(gpio, run_py_callbacks);
+   piUnlock(IRQ_KEY);
+//   add_edge_callback(gpio, run_py_callbacks);
+
+   wiringPi_edge = new_py_cb->edge;
+   if (new_py_cb->edge == RISING_EDGE)
+     wiringPi_edge = FALLING_EDGE;
+   else if (new_py_cb->edge == FALLING_EDGE)
+     wiringPi_edge = RISING_EDGE;
+
+   result = wiringPiISR((int)gpio, wiringPi_edge, &run_py_callbacks, new_py_cb->bouncetime );
+   if (result != 0)
+   {
+     PyErr_SetString(PyExc_RuntimeError, "Failed to setup wiringPiISR");
+     return 0;
+   }
    return 0;
 }
 
-// python function add_event_callback(gpio, callback)
+// python function add_event_callback(gpio, callback, bouncetime = 0)
 static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject *kwargs)
 {
    unsigned int gpio;
    int channel;
+   int bouncetime = 0;
+//   struct py_callback *cb = py_callbacks;
    PyObject *cb_func;
-   char *kwlist[] = {"gpio", "callback", NULL};
+   char *kwlist[] = {"gpio", "callback", "bouncetime", NULL};
 
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "iO|i", kwlist, &channel, &cb_func))
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "iO|i", kwlist, &channel, &cb_func, &bouncetime ))
       return NULL;
 
    if (!PyCallable_Check(cb_func))
@@ -701,14 +738,15 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
       PyErr_SetString(PyExc_RuntimeError, "You must setup() the GPIO channel as an input first");
       return NULL;
    }
-
+   
+// check if gpio is in list and py_cb already defined
    if (!gpio_event_added(gpio))
    {
       PyErr_SetString(PyExc_RuntimeError, "Add event detection using add_event_detect first before adding a callback");
       return NULL;
    }
-
-   if (add_py_callback(gpio, cb_func) != 0)
+   
+   if (add_py_callback(gpio, cb_func, -1, bouncetime) != 0)
       return NULL;
 
    Py_RETURN_NONE;
@@ -718,11 +756,12 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
 static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *kwargs)
 {
    unsigned int gpio;
-   int channel, edge, result;
-   int bouncetime = -666;
+   int channel, edge;
+   int bouncetime = 0;
    PyObject *cb_func = NULL;
+   struct py_callback *cb = py_callbacks;
    char *kwlist[] = {"gpio", "edge", "callback", "bouncetime", NULL};
-
+   
    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii|Oi", kwlist, &channel, &edge, &cb_func, &bouncetime))
       return NULL;
 
@@ -750,15 +789,17 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
       return NULL;
    }
 
-   if (bouncetime <= 0 && bouncetime != -666)
+//   if (bouncetime <= 0 && bouncetime != -666)
+   if (bouncetime < 0 )
    {
-      PyErr_SetString(PyExc_ValueError, "Bouncetime must be greater than 0");
+      PyErr_SetString(PyExc_ValueError, "Bouncetime must be equal or greater than 0");
       return NULL;
    }
 
    if (check_gpio_priv())
       return NULL;
 
+/*  
    if ((result = add_edge_detect(gpio, edge, bouncetime)) != 0)   // starts a thread
    {
       if (result == 1)
@@ -770,11 +811,24 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
          return NULL;
       }
    }
+*/
 
-   if (cb_func != NULL)
-      if (add_py_callback(gpio, cb_func) != 0)
-         return NULL;
-
+// check if gpio is in list
+   while (cb != NULL)
+   {
+     if (cb->gpio == gpio) {
+       PyErr_SetString(PyExc_RuntimeError, "Conflicting edge detection already enabled for this GPIO channel");
+       return NULL;    // ignore callback, only 1 callback per gpio allowed  
+     }
+     cb = cb->next; 
+   }
+   
+//   if (cb_func != NULL)      
+   if (add_py_callback(gpio, cb_func, edge, bouncetime) != 0) {  
+     PyErr_SetString(PyExc_RuntimeError, "Failed to add edge detection");    
+     return NULL;
+   }
+   
    Py_RETURN_NONE;
 }
 
@@ -793,12 +847,17 @@ static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)
    if (get_gpio_number(channel, &gpio))
        return NULL;
 
+   wiringPiISRStop((int)gpio);
+   
    // remove all python callbacks for gpio
+   piLock (IRQ_KEY) ;
    while (cb != NULL)
    {
       if (cb->gpio == gpio)
       {
-         Py_XDECREF(cb->py_cb);
+         if (cb->py_cb != NULL)
+           Py_XDECREF(cb->py_cb);
+       
          if (prev == NULL)
             py_callbacks = cb->next;
          else
@@ -811,11 +870,13 @@ static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)
          cb = cb->next;
       }
    }
-
+   piUnlock (IRQ_KEY) ;
+   irq_occurred[gpio] = 0;
+   
    if (check_gpio_priv())
       return NULL;
 
-   remove_edge_detect(gpio);
+//   remove_edge_detect(gpio);
 
    Py_RETURN_NONE;
 }
@@ -832,7 +893,7 @@ static PyObject *py_event_detected(PyObject *self, PyObject *args)
    if (get_gpio_number(channel, &gpio))
        return NULL;
 
-   if (event_detected(gpio))
+   if (irq_detected(gpio))
       Py_RETURN_TRUE;
    else
       Py_RETURN_FALSE;
@@ -842,10 +903,12 @@ static PyObject *py_event_detected(PyObject *self, PyObject *args)
 static PyObject *py_wait_for_edge(PyObject *self, PyObject *args, PyObject *kwargs)
 {
    unsigned int gpio;
-   int channel, edge, result;
-   int bouncetime = -666; // None
+   int channel, edge;
+   int bouncetime = 0; // None
    int timeout = -1; // None
-
+   int wiringPi_edge;
+   long long int result;
+   
    static char *kwlist[] = {"channel", "edge", "bouncetime", "timeout", NULL};
 
    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii|ii", kwlist, &channel, &edge, &bouncetime, &timeout))
@@ -869,9 +932,10 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args, PyObject *kwar
       return NULL;
    }
 
-   if (bouncetime <= 0 && bouncetime != -666)
+//   if (bouncetime <= 0 && bouncetime != -666)
+   if (bouncetime < 0)       
    {
-      PyErr_SetString(PyExc_ValueError, "Bouncetime must be greater than 0");
+      PyErr_SetString(PyExc_ValueError, "Bouncetime must be equal or greater than 0");
       return NULL;
    }
 
@@ -883,21 +947,34 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args, PyObject *kwar
 
    if (check_gpio_priv())
       return NULL;
-
+/*
    Py_BEGIN_ALLOW_THREADS // disable GIL
    result = blocking_wait_for_edge(gpio, edge, bouncetime, timeout);
    Py_END_ALLOW_THREADS   // enable GIL
+*/
 
-   if (result == 0) {
-      Py_RETURN_NONE;
-   } else if (result == -1) {
-      PyErr_SetString(PyExc_RuntimeError, "Conflicting edge detection events already exist for this GPIO channel");
+   wiringPi_edge = edge;
+   if (edge == RISING_EDGE)
+     wiringPi_edge = FALLING_EDGE;
+   else if (edge == FALLING_EDGE)
+     wiringPi_edge = RISING_EDGE;
+ 
+   if (waitForInterruptInit (gpio, wiringPi_edge) != 0) {
+      PyErr_SetString(PyExc_RuntimeError, "wiringPi: waitForInterruptInit failed");
       return NULL;
-   } else if (result == -2) {
+   }
+   
+   result = waitForInterrupt(gpio, timeout, bouncetime);
+   waitForInterruptClose( gpio );
+   if (result < 0LL) {
       PyErr_SetString(PyExc_RuntimeError, "Error waiting for edge");
       return NULL;
-   } else {
-      return Py_BuildValue("i", channel);
+   }
+   else if (result == 0LL) {        // timeout
+      return Py_BuildValue("i", -1);
+   }
+   else {
+      return Py_BuildValue("i", gpio);
    }
 
 }
@@ -1007,7 +1084,7 @@ PyMethodDef rpi_gpio_methods[] = {
    {"remove_event_detect", py_remove_event_detect, METH_VARARGS, "Remove edge detection for a particular GPIO channel\nchannel - either board pin number or BCM number depending on which mode is set."},
    {"event_detected", py_event_detected, METH_VARARGS, "Returns True if an edge has occurred on a given GPIO.  You need to enable edge detection using add_event_detect() first.\nchannel - either board pin number or BCM number depending on which mode is set."},
    {"add_event_callback", (PyCFunction)py_add_event_callback, METH_VARARGS | METH_KEYWORDS, "Add a callback for an event already defined using add_event_detect()\nchannel      - either board pin number or BCM number depending on which mode is set.\ncallback     - a callback function"},
-   {"wait_for_edge", (PyCFunction)py_wait_for_edge, METH_VARARGS | METH_KEYWORDS, "Wait for an edge.  Returns the channel number or None on timeout.\nchannel      - either board pin number or BCM number depending on which mode is set.\nedge         - RISING, FALLING or BOTH\n[bouncetime] - time allowed between calls to allow for switchbounce\n[timeout]    - timeout in ms"},
+   {"wait_for_edge", (PyCFunction)py_wait_for_edge, METH_VARARGS | METH_KEYWORDS, "Wait for an edge.  Returns the channel number or None on timeout.\nchannel      - either board pin number or BCM number depending on which mode is set.\nedge         - RISING, FALLING or BOTH\n[bouncetime] - time allowed between calls to allow for switchbounce\n[timeout]    - timeout in ms"}, 
    {"gpio_function", py_gpio_function, METH_VARARGS, "Return the current GPIO function (IN, OUT, PWM, SERIAL, I2C, SPI)\nchannel - either board pin number or BCM number depending on which mode is set."},
    {"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
    {NULL, NULL, 0, NULL}
