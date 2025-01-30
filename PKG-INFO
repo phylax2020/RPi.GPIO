@@ -23,7 +23,6 @@ Description: This package provides a Python module to control the GPIO on a Rasp
         
         Change Log
         ==========
-         
         0.8.3
         -------
         Interrupt functions now working when linked with WiringPi version >= 3.13 
