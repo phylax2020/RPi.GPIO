@@ -16,8 +16,8 @@ Thanks to the developers of WiringPi, who did a lot of work to support all Raspb
 # RPi.GPIO add_event_detect test
 ##*************************************
 ## BCM pins
-## IRQpin : setup as input with internal pullup. Connected with push button to GND with 1K resistor in series.
-## OUTpin : connected to a LED with 470 Ohm resistor in series to GND. Toggles LED with every push button pressed.
+## btn_input : setup as input with internal pullup. Connected with push button to GND with 1K resistor in series.
+## LED_output : connected to a LED with 470 Ohm resistor in series to GND. Toggles LED with every push button pressed.
 ##*************************************
 #
 
