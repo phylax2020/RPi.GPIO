@@ -13,11 +13,11 @@ sudo apt purge wiringpi
 # If returned aarch64 --> 64 Bit
 #
 # If 32 bit release Bookworm
-wget https://github.com/WiringPi/WiringPi/releases/download/3.13/wiringpi_3.13_armhf.deb
+wget https://github.com/phylax2020/WiringPi/releases/download/3.13/wiringpi_3.13_armhf.deb
 sudo apt install ./wiringpi_3.13_armhf.deb
 
 # If 64 bit release Bookworm
-wget https://github.com/WiringPi/WiringPi/releases/download/3.13/wiringpi_3.13_arm64.deb
+wget https://github.com/phylax2020/WiringPi/releases/download/3.13/wiringpi_3.13_arm64.deb
 sudo apt install ./wiringpi_3.13_arm64.deb
 
 # If you want to build your own version of WiringPi:
