@@ -764,7 +764,10 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
    
    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii|Oi", kwlist, &channel, &edge, &cb_func, &bouncetime))
       return NULL;
-
+   
+   if (cb_func == Py_None)
+       cb_func = NULL;
+   
    if (cb_func != NULL && !PyCallable_Check(cb_func))
    {
       PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
@@ -958,13 +961,9 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args, PyObject *kwar
      wiringPi_edge = FALLING_EDGE;
    else if (edge == FALLING_EDGE)
      wiringPi_edge = RISING_EDGE;
- 
-   if (waitForInterruptInit (gpio, wiringPi_edge) != 0) {
-      PyErr_SetString(PyExc_RuntimeError, "wiringPi: waitForInterruptInit failed");
-      return NULL;
-   }
+    
+   result = waitForInterrupt(gpio, wiringPi_edge, timeout, bouncetime);
    
-   result = waitForInterrupt(gpio, timeout, bouncetime);
    waitForInterruptClose( gpio );
    if (result < 0LL) {
       PyErr_SetString(PyExc_RuntimeError, "Error waiting for edge");

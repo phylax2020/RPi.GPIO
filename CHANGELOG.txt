@@ -1,5 +1,9 @@
 Change Log
 ==========
+0.8.4
+-----
+Interrupt functions with debouncing >= 3.14
+
 0.8.3
 -----
 Interrupt functions now working when linked with WiringPi version >= 3.13 

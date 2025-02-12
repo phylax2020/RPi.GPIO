@@ -13,12 +13,12 @@ sudo apt purge wiringpi
 # If returned aarch64 --> 64 Bit
 #
 # If 32 bit release Bookworm
-wget https://github.com/phylax2020/WiringPi/releases/download/3.13/wiringpi_3.13_armhf.deb
-sudo apt install ./wiringpi_3.13_armhf.deb
+wget https://github.com/phylax2020/WiringPi/releases/download/3.14/wiringpi_3.14_armhf.deb
+sudo apt install ./wiringpi_3.14_armhf.deb
 
 # If 64 bit release Bookworm
-wget https://github.com/phylax2020/WiringPi/releases/download/3.13/wiringpi_3.13_arm64.deb
-sudo apt install ./wiringpi_3.13_arm64.deb
+wget https://github.com/phylax2020/WiringPi/releases/download/3.14/wiringpi_3.14_arm64.deb
+sudo apt install ./wiringpi_3.14_arm64.deb
 
 # If you want to build your own version of WiringPi:
 
@@ -26,7 +26,7 @@ sudo apt install ./wiringpi_3.13_arm64.deb
 sudo apt update
 sudo apt upgrade
 
-# install latest version (3.13) from source, it is a fork from https://github.com/WiringPi/WiringPi
+# install latest version (3.14) from source, it is a fork from https://github.com/WiringPi/WiringPi
 # Installing instructions can be found at https://github.com/phylax2020/WiringPi
 # fetch the source
 sudo apt install git
@@ -37,17 +37,17 @@ cd WiringPi
 ./build debian
 
 # on Pi-OS 32 Bit:
-mv debian-template/wiringpi_3.13_armhf.deb .
+mv debian-template/wiringpi_3.14_armhf.deb .
 
 # on Pi-OS 64 Bit
-mv debian-template/wiringpi_3.13_arm64.deb .
+mv debian-template/wiringpi_3.14_arm64.deb .
 
 # install it
 # on Pi-OS 32 Bit
-sudo apt install ./wiringpi_3.13_armhf.deb
+sudo apt install ./wiringpi_3.14_armhf.deb
 
 # on Pi.OS 64 Bit
-sudo apt install ./wiringpi_3.13_arm64.deb
+sudo apt install ./wiringpi_3.14_arm64.deb
 
 ############################
 # now install RPi.GPIO     #
@@ -68,12 +68,12 @@ sudo pip3 uninstall RPi.GPIO --break-system-packages
 # If returned aarch64 --> 64 Bit
 #
 # If 32 bit release Bookworm
-wget https://github.com/phylax2020/RPi.GPIO/releases/download/v0.8.3/python3-rpi.gpio_0.8.3-1_armhf.deb
-sudo apt install ./python3-rpi.gpio_0.8.3-1_armhf.deb
+wget https://github.com/phylax2020/RPi.GPIO/releases/download/v0.8.4/python3-rpi.gpio_0.8.4-1_armhf.deb
+sudo apt install ./python3-rpi.gpio_0.8.4-1_armhf.deb
 
 # If 64 bit release Bookworm
-wget https://github.com/phylax2020/RPi.GPIO/releases/download/v0.8.3/python3-rpi.gpio_0.8.3-1_arm64.deb
-sudo apt install ./python3-rpi.gpio_0.8.3-1_arm64.deb
+wget https://github.com/phylax2020/RPi.GPIO/releases/download/v0.8.4/python3-rpi.gpio_0.8.4-1_arm64.deb
+sudo apt install ./python3-rpi.gpio_0.8.4-1_arm64.deb
 
 ###################################
 # install from source             #
@@ -88,7 +88,7 @@ sudo apt install python3-dev
 # Install python3 build package
 sudo apt install python3-build
 
-# If you want install python3-rpi.gpio_0.8.3-1_arm<hf/64>.deb from source
+# If you want install python3-rpi.gpio_0.8.4-1_arm<hf/64>.deb from source
 # install stdeb and dependencies
 sudo apt install python3-stdeb
 sudo apt install dh-python
@@ -101,18 +101,18 @@ git clone https://github.com/phylax2020/RPi.GPIO.git
 cd RPi.GPIO
 python3 setup.py --command-packages=stdeb.command bdist_deb
 cd deb_dist
-sudo apt install ./python3-rpi.gpio_0.8.3-1_arm<hf/64>.deb
+sudo apt install ./python3-rpi.gpio_0.8.4-1_arm<hf/64>.deb
 
 
 # alternatively install RPi.GPIO using pip
-# get assets RPi.GPIO-0.8.3.tar.gz or RPi.GPIO-0.8.3.zip from https://github.com/phylax2020/RPi.GPIO/archive/refs/tags/v0.8.3
+# get assets RPi.GPIO-0.8.4.tar.gz or RPi.GPIO-0.8.4.zip from https://github.com/phylax2020/RPi.GPIO/archive/refs/tags/v0.8.4
 cd ~
-wget https://github.com/phylax2020/RPi.GPIO/archive/refs/tags/v0.8.3.tar.gz
-tar -xvf v0.8.3.tar.gz
-cd RPi.GPIO-0.8.3
+wget https://github.com/phylax2020/RPi.GPIO/archive/refs/tags/v0.8.4.tar.gz
+tar -xvf v0.8.4.tar.gz
+cd RPi.GPIO-0.8.4
 python3 -m build --sdist
 cd dist
-sudo pip3 install rpi_gpio-0.8.3.tar.gz --break-system-packages
+sudo pip3 install rpi_gpio-0.8.4.tar.gz --break-system-packages
 
 ##########################
 # test installation      #

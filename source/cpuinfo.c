@@ -102,6 +102,7 @@ int get_rpi_info(rpi_info *info)
                case '2': info->type = "Zero 2W"; info->p1_revision = 3; break;
                case '3': info->type = "Pi 400"; info->p1_revision = 3; break;
                case '4': info->type = "Compute Module 4"; info->p1_revision = 0; break;
+               case '5': info->type = "Compute Module 4S"; info->p1_revision = 0; break;
                case '7': info->type = "Pi 5"; info->p1_revision = 3; break;
                case '8': info->type = "Compute Module 5"; info->p1_revision = 0; break;
                case '9': info->type = "Pi 500"; info->p1_revision = 3; break;
@@ -135,6 +136,7 @@ int get_rpi_info(rpi_info *info)
          case 3: info->ram = "2G"; break;
          case 4: info->ram = "4G"; break;
          case 5: info->ram = "8G"; break;
+         case 6: info->ram = "16G"; break;         
          default: info->ram = "Unknown"; break;
       }
    } else {
