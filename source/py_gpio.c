@@ -21,7 +21,7 @@ SOFTWARE.
 */
 
 #include "Python.h"
-#include "c_gpio.h"
+// #include "c_gpio.h"
 #include "event_gpio.h"
 #include "py_pwm.h"
 #include "cpuinfo.h"
@@ -778,12 +778,12 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
        return NULL;
 
    // check channel is set up as an input
-   if (gpio_direction[gpio] != INPUT)
+/*   if (gpio_direction[gpio] != INPUT)
    {
       PyErr_SetString(PyExc_RuntimeError, "You must setup() the GPIO channel as an input first");
       return NULL;
    }
-
+*/
    // is edge valid value
    edge -= PY_EVENT_CONST_OFFSET;
    if (edge != RISING_EDGE && edge != FALLING_EDGE && edge != BOTH_EDGE)
@@ -964,13 +964,14 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args, PyObject *kwar
     
    result = waitForInterrupt(gpio, wiringPi_edge, timeout, bouncetime);
    
-   waitForInterruptClose( gpio );
+//   waitForInterruptClose( gpio );
+
    if (result < 0LL) {
       PyErr_SetString(PyExc_RuntimeError, "Error waiting for edge");
       return NULL;
    }
    else if (result == 0LL) {        // timeout
-      return Py_BuildValue("i", -1);
+      return Py_BuildValue("");       // return none
    }
    else {
       return Py_BuildValue("i", gpio);

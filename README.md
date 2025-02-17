@@ -24,8 +24,8 @@ Thanks to the developers of WiringPi, who did a lot of work to support all Raspb
 import time
 import RPi.GPIO as GPIO
 
-btn_input = 16;
-LED_output = 12;
+IRQpin = 16;
+OUTpin = 12;
 toggle = False
 bouncetime = 1000   # microseconds
 
@@ -36,44 +36,44 @@ def buttonEventHandler_falling (pin, timestamp):
     print(f'Pin = {pin:d}, timestamp = {timestamp:d}')
     if (toggle == True):
         # turn LED on
-        GPIO.output(LED_output,True)
+        GPIO.output(OUTpin,True)
         toggle = False
     else:
         # turn LED off
-        GPIO.output(LED_output, False)
+        GPIO.output(OUTpin, False)
         toggle = True
 
 # main function
 def main():
     GPIO.setmode(GPIO.BCM)
 
-# GPIO btn_input set up as input.
-    GPIO.setup(btn_input, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(LED_output, GPIO.OUT)
+# GPIO IRQpin set up as input.
+    GPIO.setup(IRQpin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(OUTpin, GPIO.OUT, initial=GPIO.HIGH)
     
     print('Test add_event_detect without callback, check if event fired with event_detected function')
-    GPIO.add_event_detect(btn_input, GPIO.FALLING,  bouncetime=bouncetime)
+    GPIO.add_event_detect(IRQpin, GPIO.FALLING,  bouncetime=bouncetime)
     print('loop with event_detected until button pressed')
     print()
-    while GPIO.event_detected(btn_input) == False:
+    while GPIO.event_detected(IRQpin) == False:
         pass
     print('button pressed detected,  now remove event detection')
-    GPIO.remove_event_detect(btn_input)
+    GPIO.remove_event_detect(IRQpin)
     print()  
     
     print('Test wait_for_edge with timeout 10s')
     time.sleep(1)
-    channel = GPIO.wait_for_edge(btn_input, GPIO.RISING, bouncetime=bouncetime, timeout=10000)
+    channel = GPIO.wait_for_edge(IRQpin, GPIO.RISING, bouncetime=bouncetime, timeout=10000)
     if (channel == -1):
         print('wait_for_edge timeout')
-    elif (channel == btn_input):
+    elif (channel == IRQpin):
         print('wait_for_edge fired')
     else:
-        print(f'wait_for_edge returned {channel:d}')
+        print(f'wait_for_edge returned None, Timeout!')
     
     print()
     print(f'Now starting add_event_detect with interrupt on falling edge with callback and bouncetime {bouncetime:d} microseconds')
-    GPIO.add_event_detect(btn_input, GPIO.FALLING, callback=buttonEventHandler_falling, bouncetime=bouncetime)
+    GPIO.add_event_detect(IRQpin, GPIO.FALLING, callback=buttonEventHandler_falling, bouncetime=bouncetime)
  
     try:  
         while True :
@@ -81,9 +81,9 @@ def main():
             
     except (Exception, KeyboardInterrupt):
         print('Interrupted')
-        GPIO.remove_event_detect(btn_input)
-        GPIO.cleanup(btn_input)  
-        GPIO.cleanup(LED_output)
+        GPIO.remove_event_detect(IRQpin)
+        GPIO.cleanup(IRQpin)  
+        GPIO.cleanup(OUTpin)
 
 if __name__=="__main__":
     main()

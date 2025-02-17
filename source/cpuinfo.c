@@ -29,6 +29,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <inttypes.h>
 #include "cpuinfo.h"
 
 int get_rpi_info(rpi_info *info)
@@ -148,7 +149,7 @@ int get_rpi_info(rpi_info *info)
       strcpy(info->revision, revision);
 
       uint64_t rev;
-      sscanf(revision, "%llx", &rev);
+      sscanf(revision, "%"PRIx64 , &rev);
       rev = rev & 0xefffffff;       // ignore preceeding 1000 for overvolt
 
       if (rev == 0x0002 || rev == 0x0003) {
