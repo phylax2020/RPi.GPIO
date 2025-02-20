@@ -23,6 +23,10 @@ Description: This package provides a Python module to control the GPIO on a Rasp
         
         Change Log
         ==========
+        0.8.6
+        -----
+        Interrupt functions optimized >= 3.16
+        
         0.8.5
         -----
         Interrupt functions optimized >= 3.15

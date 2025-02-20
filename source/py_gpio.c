@@ -630,11 +630,16 @@ static unsigned int chan_from_gpio(unsigned int gpio)
    return -1;
 }
 
-static void run_py_callbacks(unsigned int gpio, long long int timestamp)
+static void run_py_callbacks(struct WPIWfiStatus wfiStatus)
 {
    PyObject *result;
    PyGILState_STATE gstate;
    struct py_callback *cb = py_callbacks;
+   unsigned int gpio;
+   long long int timestamp;
+   
+   gpio = wfiStatus.gpioPin;
+   timestamp = wfiStatus.timeStamp_us;
    
    piLock (IRQ_KEY) ;
    while (cb != NULL)
@@ -910,7 +915,7 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args, PyObject *kwar
    int bouncetime = 0; // None
    int timeout = -1; // None
    int wiringPi_edge;
-   long long int result;
+   struct WPIWfiStatus wfiStatus;
    
    static char *kwlist[] = {"channel", "edge", "bouncetime", "timeout", NULL};
 
@@ -962,19 +967,19 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args, PyObject *kwar
    else if (edge == FALLING_EDGE)
      wiringPi_edge = RISING_EDGE;
     
-   result = waitForInterrupt(gpio, wiringPi_edge, timeout, bouncetime);
+   wfiStatus = waitForInterrupt(gpio, wiringPi_edge, timeout, bouncetime);
    
 //   waitForInterruptClose( gpio );
 
-   if (result < 0LL) {
+   if (wfiStatus.status < 0) {
       PyErr_SetString(PyExc_RuntimeError, "Error waiting for edge");
       return NULL;
    }
-   else if (result == 0LL) {        // timeout
+   else if (wfiStatus.status == 0) {        // timeout
       return Py_BuildValue("");       // return none
    }
    else {
-      return Py_BuildValue("i", gpio);
+      return Py_BuildValue("i", wfiStatus.gpioPin);
    }
 
 }

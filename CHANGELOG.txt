@@ -1,5 +1,9 @@
 Change Log
 ==========
+0.8.6
+-----
+Interrupt functions optimized >= 3.16
+
 0.8.5
 -----
 Interrupt functions optimized >= 3.15
