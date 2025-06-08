@@ -52,7 +52,7 @@ static int mmap_gpio_mem(void)
    if (module_setup)
       return 0;
 
-    result = wiringPiSetupGpio();   // always in mode BCM
+    result = wiringPiSetupPinType(WPI_PIN_BCM);   // always in mode BCM
     module_setup = 1;
     return result;
 
@@ -630,7 +630,7 @@ static unsigned int chan_from_gpio(unsigned int gpio)
    return -1;
 }
 
-static void run_py_callbacks(struct WPIWfiStatus wfiStatus)
+static void run_py_callbacks(struct WPIWfiStatus wfiStatus, void* userdata)
 {
    PyObject *result;
    PyGILState_STATE gstate;
@@ -638,7 +638,7 @@ static void run_py_callbacks(struct WPIWfiStatus wfiStatus)
    unsigned int gpio;
    long long int timestamp;
    
-   gpio = wfiStatus.gpioPin;
+   gpio = wfiStatus.pinBCM;
    timestamp = wfiStatus.timeStamp_us;
    
    piLock (IRQ_KEY) ;
@@ -706,7 +706,7 @@ static int add_py_callback(unsigned int gpio, PyObject *cb_func, int edge, int b
    else if (new_py_cb->edge == FALLING_EDGE)
      wiringPi_edge = RISING_EDGE;
 
-   result = wiringPiISR((int)gpio, wiringPi_edge, &run_py_callbacks, new_py_cb->bouncetime );
+   result = wiringPiISR2((int)gpio, wiringPi_edge, &run_py_callbacks, new_py_cb->bouncetime, NULL );
    if (result != 0)
    {
      PyErr_SetString(PyExc_RuntimeError, "Failed to setup wiringPiISR");
@@ -967,19 +967,19 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args, PyObject *kwar
    else if (edge == FALLING_EDGE)
      wiringPi_edge = RISING_EDGE;
     
-   wfiStatus = waitForInterrupt(gpio, wiringPi_edge, timeout, bouncetime);
+   wfiStatus = waitForInterrupt2(gpio, wiringPi_edge, timeout, bouncetime);
    
 //   waitForInterruptClose( gpio );
 
-   if (wfiStatus.status < 0) {
+   if (wfiStatus.statusOK < 0) {
       PyErr_SetString(PyExc_RuntimeError, "Error waiting for edge");
       return NULL;
    }
-   else if (wfiStatus.status == 0) {        // timeout
+   else if (wfiStatus.statusOK == 0) {        // timeout
       return Py_BuildValue("");       // return none
    }
    else {
-      return Py_BuildValue("i", wfiStatus.gpioPin);
+      return Py_BuildValue("i", wfiStatus.pinBCM);
    }
 
 }

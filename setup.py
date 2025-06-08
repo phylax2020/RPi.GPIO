@@ -35,7 +35,7 @@ classifiers = ['Development Status :: 5 - Production/Stable',
                'Topic :: System :: Hardware']
 
 setup(name             = 'RPi.GPIO',
-      version          = '0.8.6',
+      version          = '0.8.7',
       author           = 'Ben Croston',
       author_email     = 'ben@croston.org',
       description      = 'A module to control Raspberry Pi GPIO channels',
@@ -44,5 +44,6 @@ setup(name             = 'RPi.GPIO',
       keywords         = 'Raspberry Pi GPIO',
       url              = 'http://sourceforge.net/projects/raspberry-gpio-python/',
       classifiers      = classifiers,
+      install_rquires  = ['wiringpi>=3.16'],
       packages         = ['RPi','RPi.GPIO'],
       ext_modules      = [Extension('RPi._GPIO', ['source/py_gpio.c', 'source/cpuinfo.c', 'source/event_gpio.c', 'source/soft_pwm.c', 'source/py_pwm.c', 'source/common.c', 'source/constants.c'], libraries=['wiringPi'])])

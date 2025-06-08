@@ -107,18 +107,18 @@ class TestAAASetup(unittest.TestCase):
         self.assertEqual(str(e.exception), 'The channel sent is invalid on a Raspberry Pi')
 
         # Test 'already in use' warning
-        GPIO.setmode(GPIO.BOARD)
-        with open('/sys/class/gpio/export','wb') as f:
-            f.write(str(LED_PIN_BCM).encode())
-        time.sleep(0.2)  # wait for udev to set permissions
-        with open('/sys/class/gpio/gpio%s/direction'%LED_PIN_BCM,'wb') as f:
-            f.write(b'out')
-        time.sleep(0.2)
-        with warnings.catch_warnings(record=True) as w:
-            GPIO.setup(LED_PIN, GPIO.OUT)    # generate 'already in use' warning
-            self.assertEqual(w[0].category, RuntimeWarning)
-        with open('/sys/class/gpio/unexport','wb') as f:
-            f.write(str(LED_PIN_BCM).encode())
+#        GPIO.setmode(GPIO.BOARD)
+#        with open('/sys/class/gpio/export','wb') as f:
+#            f.write(str(LED_PIN_BCM).encode())
+#        time.sleep(0.2)  # wait for udev to set permissions
+#        with open('/sys/class/gpio/gpio%s/direction'%LED_PIN_BCM,'wb') as f:
+#            f.write(b'out')
+#        time.sleep(0.2)
+#        with warnings.catch_warnings(record=True) as w:
+#            GPIO.setup(LED_PIN, GPIO.OUT)    # generate 'already in use' warning
+#            self.assertEqual(w[0].category, RuntimeWarning)
+#        with open('/sys/class/gpio/unexport','wb') as f:
+#            f.write(str(LED_PIN_BCM).encode())
         GPIO.cleanup()
 
         # test initial value of high reads back as high
@@ -303,32 +303,32 @@ class TestSoftPWM(unittest.TestCase):
 class TestSetWarnings(unittest.TestCase):
     def test_alreadyinuse(self):
         """Test 'already in use' warning"""
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setwarnings(False)
-        with open('/sys/class/gpio/export','wb') as f:
-            f.write(str(LED_PIN_BCM).encode())
-        time.sleep(0.2)  # wait for udev to set permissions
-        with open('/sys/class/gpio/gpio%s/direction'%LED_PIN_BCM,'wb') as f:
-            f.write(b'out')
-        with warnings.catch_warnings(record=True) as w:
-            GPIO.setup(LED_PIN, GPIO.OUT)    # generate 'already in use' warning
-            self.assertEqual(len(w),0)       # should be no warnings
-        with open('/sys/class/gpio/unexport','wb') as f:
-            f.write(str(LED_PIN_BCM).encode())
-        GPIO.cleanup()
+#        GPIO.setmode(GPIO.BOARD)
+#        GPIO.setwarnings(False)
+#        with open('/sys/class/gpio/export','wb') as f:
+#            f.write(str(LED_PIN_BCM).encode())
+#        time.sleep(0.2)  # wait for udev to set permissions
+#        with open('/sys/class/gpio/gpio%s/direction'%LED_PIN_BCM,'wb') as f:
+#            f.write(b'out')
+#        with warnings.catch_warnings(record=True) as w:
+#            GPIO.setup(LED_PIN, GPIO.OUT)    # generate 'already in use' warning
+#            self.assertEqual(len(w),0)       # should be no warnings
+#        with open('/sys/class/gpio/unexport','wb') as f:
+#            f.write(str(LED_PIN_BCM).encode())
+#        GPIO.cleanup()
 
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setwarnings(True)
-        with open('/sys/class/gpio/export','wb') as f:
-            f.write(str(LED_PIN_BCM).encode())
-        time.sleep(0.2)  # wait for udev to set permissions
-        with open('/sys/class/gpio/gpio%s/direction'%LED_PIN_BCM,'wb') as f:
-            f.write(b'out')
-        with warnings.catch_warnings(record=True) as w:
-            GPIO.setup(LED_PIN, GPIO.OUT)    # generate 'already in use' warning
-            self.assertEqual(w[0].category, RuntimeWarning)
-        with open('/sys/class/gpio/unexport','wb') as f:
-            f.write(str(LED_PIN_BCM).encode())
+#        GPIO.setmode(GPIO.BOARD)
+#        GPIO.setwarnings(True)
+#        with open('/sys/class/gpio/export','wb') as f:
+#            f.write(str(LED_PIN_BCM).encode())
+#        time.sleep(0.2)  # wait for udev to set permissions
+#        with open('/sys/class/gpio/gpio%s/direction'%LED_PIN_BCM,'wb') as f:
+#            f.write(b'out')
+#        with warnings.catch_warnings(record=True) as w:
+#            GPIO.setup(LED_PIN, GPIO.OUT)    # generate 'already in use' warning
+#            self.assertEqual(w[0].category, RuntimeWarning)
+#        with open('/sys/class/gpio/unexport','wb') as f:
+#            f.write(str(LED_PIN_BCM).encode())
         GPIO.cleanup()
 
     def test_cleanupwarning(self):

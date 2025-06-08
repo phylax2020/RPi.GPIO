@@ -1,5 +1,6 @@
 # RPi.GPIO
-RPi.GPIO wrapper for WiringPi supporting RPi 5B, RPi Zero W, RPi Zero 2W, RPi 3B,4B.
+RPi.GPIO wrapper for WiringPi supporting RPi 5B, RPi Zero W, RPi Zero 2W, RPi 3B,4B.  
+Download and install WiringPi version 3.16 or higher from https://github.com/WiringPi/WiringPi  
 
 This repository is the continuation of Ben Croston's RPi.GPIO, because it seems that there are no plans 
 to update the library to support RPi 5 and newer devices like RPi 500.

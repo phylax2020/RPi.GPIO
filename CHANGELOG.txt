@@ -1,5 +1,9 @@
 Change Log
 ==========
+0.8.7
+-----
+Use WiringPi version 3.16 from https://github.com/WiringPi/WiringPi
+
 0.8.6
 -----
 Interrupt functions optimized >= 3.16
