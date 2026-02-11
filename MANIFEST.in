@@ -1,2 +1,3 @@
 global-include *.txt *.py *.c *.h
+include stdeb.cfg build.sh
 prune .hg
