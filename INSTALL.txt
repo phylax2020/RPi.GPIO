@@ -1,7 +1,7 @@
 #
-####################################################
-# WiringPi version 3.18 is required for RPi.GPIO   #
-####################################################
+######################################################
+# WiringPi version >=3.16 is required for RPi.GPIO   #
+######################################################
 
 # Remove old version of WiringPi:
 sudo apt purge wiringpi
@@ -13,11 +13,11 @@ sudo apt purge wiringpi
 # If returned arm64 --> 64 Bit
 #
 # If 32 bit release Bookworm
-wget https://github.com/WiringPi/WiringPi/releases/download/3.16/wiringpi_3.18_armhf.deb
+wget https://github.com/WiringPi/WiringPi/releases/download/3.18/wiringpi_3.18_armhf.deb
 sudo apt install ./wiringpi_3.18_armhf.deb
 
 # If 64 bit release Bookworm
-wget https://github.com/WiringPi/WiringPi/releases/download/3.16/wiringpi_3.18_arm64.deb
+wget https://github.com/WiringPi/WiringPi/releases/download/3.18/wiringpi_3.18_arm64.deb
 sudo apt install ./wiringpi_3.18_arm64.deb
 
 ############################
